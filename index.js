@@ -1,7 +1,7 @@
-const {Board, Servo} = require("johnny-five");
+import APP from "./app/index.js";
+import keypress from "keypress";
 
-const board = new Board({ port: "/dev/ttyS4" });
-const keypress = require("keypress");
+const board = APP.innitApplication({ port: "/dev/ttyS4" });
 
 keypress(process.stdin);
 
@@ -9,7 +9,7 @@ board.on("ready", () => {
 
     console.log("Use Up and Down arrows for CW and CCW respectively. Space to stop.");
 
-    const servo = new Servo.Continuous(10);
+    const servo = APP.innitServo(10);
 
     process.stdin.resume();
     process.stdin.setEncoding("utf8");
