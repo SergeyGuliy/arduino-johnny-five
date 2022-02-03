@@ -1,37 +1,57 @@
+let serialPath = '/dev/ttyS6';
+
 import APP from "./app/index.js";
-import keypress from "keypress";
+const {innitApplication, innitServo, innitKeyPress} = APP;
 
-const board = APP.innitApplication({ port: "/dev/ttyS4" });
+const board = innitApplication({ port: serialPath });
+const stdin = innitKeyPress();
 
-keypress(process.stdin);
+import JF from "johnny-five";
+
 
 board.on("ready", () => {
+    const servo = innitServo(10);
 
-    console.log("Use Up and Down arrows for CW and CCW respectively. Space to stop.");
+    let buttonOn = new JF.Button(2);
+    let buttonOff = new JF.Button(3);
 
-    const servo = APP.innitServo(10);
 
-    process.stdin.resume();
-    process.stdin.setEncoding("utf8");
-    process.stdin.setRawMode(true);
+    board.repl.inject({
+        buttonOn: buttonOn,
+        buttonOff: buttonOff
+    });
 
-    process.stdin.on("keypress", (ch, key) => {
+    buttonOff.on("up", function() {
+        servo.ccw();
+    });
 
-        if (!key) {
-            return;
-        }
+    buttonOn.on("up", function() {
+        servo.cw();
+    });
+
+    // let joystick = new JF.Joystick({
+    //     //   [ x, y ]
+    //     pins: ["A0", "A1"]
+    // });
+    //
+    // joystick.on("change", function() {
+    //     console.log("Joystick");
+    //     console.log("  x : ", +this.x.toFixed(3));
+    //     console.log("  y : ", +this.y.toFixed(3));
+    //     console.log("--------------------------------------");
+    // });
+
+    stdin.on("keypress", (ch, key) => {
+        if (!key) { return; }
 
         if (key.name === "q") {
             console.log("Quitting");
             process.exit();
         } else if (key.name === "up") {
-            console.log("CW");
             servo.cw();
         } else if (key.name === "down") {
-            console.log("CCW");
             servo.ccw();
         } else if (key.name === "space") {
-            console.log("Stopping");
             servo.stop();
         }
     });
